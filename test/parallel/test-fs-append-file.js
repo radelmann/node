@@ -17,39 +17,33 @@ const s = '南越国是前203年至前111年存在于岭南地区的一个国家
           '历经五代君主。南越国是岭南地区的第一个有记载的政权国家，采用封建制和郡县制并存的制度，' +
           '它的建立保证了秦末乱世岭南地区社会秩序的稳定，有效的改善了岭南地区落后的政治、##济现状。\n';
 
-let ncallbacks = 0;
+// let ncallbacks = 0;
 
 common.refreshTmpDir();
 
 // test that empty file will be created and have content added
-fs.appendFile(filename, s, function(e) {
+fs.appendFile(filename, s, common.mustCall(function(e) {
   assert.ifError(e);
 
-  ncallbacks++;
-
-  fs.readFile(filename, function(e, buffer) {
+  fs.readFile(filename, common.mustCall(function(e, buffer) {
     assert.ifError(e);
-    ncallbacks++;
     assert.strictEqual(Buffer.byteLength(s), buffer.length);
-  });
-});
+  }));
+}));
 
 // test that appends data to a non empty file
 const filename2 = join(common.tmpDir, 'append2.txt');
 fs.writeFileSync(filename2, currentFileData);
 
-fs.appendFile(filename2, s, function(e) {
+fs.appendFile(filename2, s, common.mustCall(function(e) {
   assert.ifError(e);
 
-  ncallbacks++;
-
-  fs.readFile(filename2, function(e, buffer) {
+  fs.readFile(filename2, common.mustCall(function(e, buffer) {
     assert.ifError(e);
-    ncallbacks++;
     assert.strictEqual(Buffer.byteLength(s) + currentFileData.length,
                        buffer.length);
-  });
-});
+  }));
+}));
 
 // test that appendFile accepts buffers
 const filename3 = join(common.tmpDir, 'append3.txt');
@@ -57,27 +51,22 @@ fs.writeFileSync(filename3, currentFileData);
 
 const buf = Buffer.from(s, 'utf8');
 
-fs.appendFile(filename3, buf, function(e) {
+fs.appendFile(filename3, buf, common.mustCall(function(e) {
   assert.ifError(e);
 
-  ncallbacks++;
-
-  fs.readFile(filename3, function(e, buffer) {
+  fs.readFile(filename3, common.mustCall(function(e, buffer) {
     assert.ifError(e);
-    ncallbacks++;
     assert.strictEqual(buf.length + currentFileData.length, buffer.length);
-  });
-});
+  }));
+}));
 
 // test that appendFile accepts numbers.
 const filename4 = join(common.tmpDir, 'append4.txt');
 fs.writeFileSync(filename4, currentFileData);
 
 const m = 0o600;
-fs.appendFile(filename4, n, { mode: m }, function(e) {
+fs.appendFile(filename4, n, { mode: m }, common.mustCall(function(e) {
   assert.ifError(e);
-
-  ncallbacks++;
 
   // windows permissions aren't unix
   if (!common.isWindows) {
@@ -85,47 +74,37 @@ fs.appendFile(filename4, n, { mode: m }, function(e) {
     assert.strictEqual(st.mode & 0o700, m);
   }
 
-  fs.readFile(filename4, function(e, buffer) {
+  fs.readFile(filename4, common.mustCall(function(e, buffer) {
     assert.ifError(e);
-    ncallbacks++;
     assert.strictEqual(Buffer.byteLength('' + n) + currentFileData.length,
                        buffer.length);
-  });
-});
+  }));
+}));
 
 // test that appendFile accepts file descriptors
 const filename5 = join(common.tmpDir, 'append5.txt');
 fs.writeFileSync(filename5, currentFileData);
 
-fs.open(filename5, 'a+', function(e, fd) {
+fs.open(filename5, 'a+', common.mustCall(function(e, fd) {
   assert.ifError(e);
 
-  ncallbacks++;
-
-  fs.appendFile(fd, s, function(e) {
+  fs.appendFile(fd, s, common.mustCall(function(e) {
     assert.ifError(e);
 
-    ncallbacks++;
-
-    fs.close(fd, function(e) {
+    fs.close(fd, common.mustCall(function(e) {
       assert.ifError(e);
 
-      ncallbacks++;
-
-      fs.readFile(filename5, function(e, buffer) {
+      fs.readFile(filename5, common.mustCall(function(e, buffer) {
         assert.ifError(e);
 
-        ncallbacks++;
         assert.strictEqual(Buffer.byteLength(s) + currentFileData.length,
                            buffer.length);
-      });
-    });
-  });
-});
+      }));
+    }));
+  }));
+}));
 
 process.on('exit', function() {
-  assert.strictEqual(12, ncallbacks);
-
   fs.unlinkSync(filename);
   fs.unlinkSync(filename2);
   fs.unlinkSync(filename3);
